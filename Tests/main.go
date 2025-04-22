@@ -2,30 +2,25 @@ package main
 
 import (
 	"io"
-	"math"
 	"net/http"
 	"os"
 	"runtime"
-	"strconv"
 	"time"
 
 	"fmt"
-
-	asciistring "github.com/Com1Software/Go-ASCII-String-Package"
 )
 
 // ----------------------------------------------------------------
 func main() {
-	fmt.Println("Weather")
+	fmt.Println("News")
 	fmt.Printf("Operating System : %s\n", runtime.GOOS)
-	//url := "https://forecast.weather.gov/MapClick.php?lat=41.5&lon=-81.7&unit=0&lg=english&FcstType=dwml"
-	url := "https://forecast.weather.gov/MapClick.php?lat=41.25&lon=-81.44&unit=0&lg=english&FcstType=dwml"
+	url := "https://www.cbsnews.com/latest/rss/main"
 
-	fmt.Printf("Current Time : %s\n", GetWeather(url, 0))
+	fmt.Printf("Current Time : %s\n", GetNews(url, 0))
+	fmt.Printf("Channel : %s\n", GetNews(url, 1))
 }
 
-
-func GetWeather(url string, opt int) string {
+func GetNews(url string, opt int) string {
 	xdata := ""
 	chr := ""
 	ton := false
@@ -54,7 +49,44 @@ func GetWeather(url string, opt int) string {
 		t := time.Now()
 		formattedTime := t.Format(time.Kitchen)
 		xdata = formattedTime
-  }
- return xdata
+		//------------------------------------------------------------------------ Location
+	case opt == 1:
+		for x := 1; x < len(body); x++ {
+			chr = string(body[x : x+1])
+			if chr == "<" {
+				ton = true
+			}
+			if chr == ">" {
+				ton = false
+				word = ""
+			}
+			if ton {
+				word = word + chr
+			}
+			if word == "<channel" {
+				tmp := ""
+				tdata := string(body[x+50 : x+170])
+				fmt.Println(tdata)
+				for xx := 1; xx < len(tdata)-5; xx++ {
+					if tdata[xx:xx+5] == "<title>" {
+						xx = xx + 5
+						for xx := xx; xx < len(tdata)-5; xx++ {
+							chr = string(tdata[xx : xx+1])
+							if chr == "<" {
+								break
+							}
+							tmp = tmp + chr
+						}
+
+					}
+
+				}
+				loc = tmp
+			}
+
+		}
+		xdata = loc
+	}
+	return xdata
 
 }
